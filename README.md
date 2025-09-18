@@ -25,4 +25,5 @@ npm install
 ```
 #PS:
 Holy Shit i highly recommend checkout the whatsapp-web.js its sooo gud u can do all sorts of things, this is 
-some of the stuff i did too mesh around if u want use it as a template fork it go nuts 🔥🔥
+some of the stuff i did too mess around if u want use it as a template fork it go nuts 🔥🔥
+
