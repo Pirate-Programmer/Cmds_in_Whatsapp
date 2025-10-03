@@ -1,8 +1,15 @@
 {
+<<<<<<< HEAD
 "dependencies": {
   "qrcode-terminal": "^0.12.0",
   "whatsapp-web.js": "^1.34.1"
 },
+=======
+  "dependencies": {
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "^1.34.1"
+  },
+>>>>>>> c2df45324f5b419f5280da0d7a5f65fb5bcb2123
   "name": "testing",
   "version": "1.0.0",
   "description": "",

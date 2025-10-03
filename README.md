@@ -22,9 +22,11 @@ It connects via WhatsApp Web and supports commands like reminders, memes, jokes,
 git clone https://github.com/Pirate-Programmer/Cmds_in_Whatsapp.git
 cd [Path/repo]
 npm install
+node index.js
 ```
 #PS:
 Holy Shit i highly recommend checkout the whatsapp-web.js its sooo gud u can do all sorts of things, this is 
 some of the stuff i did too mess around if u want use it as a template fork it go nuts 🔥🔥
+
 
 
