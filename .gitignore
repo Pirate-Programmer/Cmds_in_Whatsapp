@@ -1,6 +1,9 @@
 # Node.js dependencies
 node_modules/
+package-lock.json
 
 # WhatsApp session & cache
 .wwebjs_auth/
 .wwebjs_cache/
+
+mapping*.json

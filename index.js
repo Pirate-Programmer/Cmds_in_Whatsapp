@@ -5,7 +5,9 @@ const { Client, LocalAuth, AuthStrategy, MessageMedia } = require('whatsapp-web.
 const client = new Client({
      authStrategy : new LocalAuth()
 });
-
+const fs = require('fs');
+const { error } = require('console');
+const filepath = "./mapping.json";
 
 //generate QR code for login
 client.on('qr', (qr) => {
@@ -13,11 +15,16 @@ client.on('qr', (qr) => {
     qrcode.generate(qr, { small : true })
 });
 
+client.on("authenticated", () => console.log("Authentication succesfull!!"));
+
+client.on("auth_failure", () => console.log("auth failed D:"));
+
 
 //when client logs in
-client.on('ready', () => {
+client.on('ready', async () => {
     console.log('Client is ready!');
 });
+
 
 
 //when messages are created ie users'own or other users
@@ -47,6 +54,15 @@ client.on('message_create', async (msg) => {
 
 
 client.initialize();
+
+
+//end session on 'ctrl + c'
+process.on('SIGINT', async () => {
+    console.log('Shutting down...');
+    await client.destroy();
+    process.exit(0);
+});
+
 
 //--------------------------remindme function ---------------------------
 async function remindme(msg){
@@ -133,29 +149,37 @@ async function getMeme(msg){
 
 
 //----------------- ping function ----------------------
-//format ping name/contact/ ?  -n <number of times>
+//format !ping chatname message  //note this will be typed in test chat through this mmsg be routed to req chat
 async function ping(msg){
-    const str = msg.body;
-    const chat = await msg.getChat();
-    if(str.length !== 2){
-        msg.reply("Error: Invalid Format: `!ping <target>(admin/all)");
+
+    if(msg.body.split(' ') < 2){
+        msg.reply("Error: Invalid Format: `!ping chatname [message]");
         console.log("invalid ping format");
         return;
     }
-    if(chat.isGroup){
-        const target = str.split(' ')[1].toLowerCase();
-        let chatIds = [];
-        switch(target){
-            case "admin":
-                chatIds = chat.participants.filter((user) => user.isadmin)
-                break;
-            case "all":
-                chatIds = chat.participants;
-        }
-        mentions = chatIds.map(user => user.id._serialized);
-        //console.log(mentions);
-        chat.sendMessage("Yo!!",{mentions});
+
+    //get chatId from the mentioned chatname
+    const regex = /^!ping\s+-n\s+(.+?)\s+-m\s+([\s\S]+)$/i;
+    const match = msg.body.match(regex);
+
+    let chatName = null;
+    let message = null;
+    if(match){
+        chatName = match[1].trim();
+        message = match[2].trim();
+    }else{
+        msg.reply("Error: Invalid Format: `!ping chatname [message]");
+        console.log("invalid ping format");
+        return;
     }
+    
+    console.log(chatName)
+    const chatId = await getChatId(chatName)
+    const chat = await client.getChatById(chatId);
+    
+
+    let mentions = chat.participants.map(user => user.id._serialized);
+    chat.sendMessage(message,{mentions});
 }
 
 //WORK IN PROGRESS
@@ -201,4 +225,27 @@ async function tellmeajoke(msg) {
         msg.reply("⚠️joke fetch failed");
         return;
     } 
+}
+
+
+async function getChatId(chatName){
+    let chatId = null;
+    
+    //when file not present or name not found 
+    try{
+        let data = fs.readFileSync(filepath,{encoding: 'utf-8'});
+        data = JSON.parse(data);
+        chatId = data[chatName];
+        if(chatId == undefined)
+            throw new Error("chatNmae not found");
+    }catch(err){
+        //incase of any error overwrite the mapping.txt file
+        const chats = await client.getChats();
+        const mapping = new Map(); //will contain mapping of name : chatId of all the chats
+        chats.forEach((chat,idx,array) => mapping[chat.name] = chat.id._serialized); 
+        fs.writeFileSync(filepath,JSON.stringify(mapping),{ encoding: 'utf8', flag: 'w' });
+        
+        chatId = mapping[chatName]
+    }
+    return chatId;   
 }
